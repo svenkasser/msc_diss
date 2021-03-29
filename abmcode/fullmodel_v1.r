@@ -61,7 +61,7 @@ library(ggplot2)
   # The next step would probably be to replace the current mating system loop which generates offspring one by one with a noon-looping system
 
 
-ABMmodel1 <- function(N, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.5, b_c = 0.5, b_b = 0.5, cb_bh = 0.5, pf_0 = 0.5, b_f = 0.5, t_max, r_max) {
+ABMmodel1 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.5, b_c = 0.5, b_b = 0.5, cb_bh = 0.5, pf_0 = 0.5, b_f = 0.5) {
   
   # Create output file - this is he data what we want to save from each run and generation
     
@@ -314,13 +314,17 @@ ABMmodel1 <- function(N, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.5, b_c = 0.5, 
   
 }
 
+## Testrun plus time measurement
+
 Before <- Sys.time()
 
-testrun <- ABMmodel1(100, 0, 0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 50, 5)
+testrun <- ABMmodel1(100, 50, 5)
 
 After <- Sys.time()
 
 Runtime <- After - Before
+
+Runtime
 
 ## Some plots and exploratory analysis
 
@@ -336,13 +340,14 @@ ggplot(data = testrun, aes(y = p_c, x = generation)) +
   stat_summary(fun = mean, geom = "line", size = 1) +
   ylim(c(0, 1)) +
   theme_bw() +
-  labs(y = "p (proportion of individuals with Monogamy behaviour)", x = "Generation")
+  labs(y = "p (proportion of individuals with Monogamy cultural trait)", x = "Generation")
 
 ggplot(data = testrun, aes(y = p_b, x = generation)) +
   geom_line(aes(colour = run)) +
   stat_summary(fun = mean, geom = "line", size = 1) +
   ylim(c(0, 1)) +
   theme_bw() +
-  labs(y = "p (proportion of individuals with Monogamy behaviour)", x = "Generation")
+  labs(y = "p (proportion of individuals with Monogamy biological trait)", x = "Generation")
 
-cor(testrun$p_c, testrun$p_b)
+
+
