@@ -41,7 +41,7 @@ library(ggplot2)
 # b_b = transmission bias for biological "Monogamy". This only plays a role for individuals that inherit mixed parental traits.
 # Possible values: 0 =< b_b =< 1
 # Default value: 0.5 - no biased transmission. Higher/lower values increase/decrease the likelihood of inheriting "Monogamy".
-# b_bh = culture bias in behaviour. This only plays a role for individuals with mixed cultural / biological traits.
+# cb_bh = culture bias in behaviour. This only plays a role for individuals with mixed cultural / biological traits.
 # Possible values: 0 =< b_bh =< 1
 # Default value: 0.5 - no bias toward cultural trait in behaviour. Higher/lower values increase/decrease the likelihood of adopting the cultural trait as the behavioural phenotype.
 
@@ -55,13 +55,22 @@ library(ggplot2)
 # Possible values: 0 =< mu_c =< 1
 # Default value: 0 - no mutation
 
+## Reproduction parameters
+
+# mono_max = maximum number of offspring for one monogamous pair
+# Possible values: 0 < mono_max
+# Default value: 100000 - effectively no reproductive limits on monogamous pairs
+# poly_max = maximum number of offspring for a polygamous individual
+# Possible values: 0 < poly_max
+# Default value: 100000 - effectively no reproductive limits on monogamous pairs
+
 ## The explanations about the inner workings of this model are laid out with comments throughout the code below
 # N.B. This is the first try combining the transmission models from Acerbi et al. with a mating system.
 # As such, this model is currently painfully slow and in dire need of optimisation.
 # The next step would probably be to replace the current mating system loop which generates offspring one by one with a noon-looping system
 
 
-ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.5, b_c = 0.5, b_b = 0.5, cb_bh = 0.5, pf_0 = 0.5, b_f = 0.5) {
+ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.5, b_c = 0.5, b_b = 0.5, cb_bh = 0.5, pf_0 = 0.5, b_f = 0.5, mono_max = 100000, poly_max = 100000) {
   
   # Create output file - this is he data what we want to save from each run and generation
   
@@ -99,7 +108,7 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
     
     # If any empty NA slots (i.e. mixed cultural/biological traits) are present
     if (anyNA(population$bh)) {  
-      # They will adopt the behavioural variant corresponding to their cultural trait with probability cb_bh
+      # They will adopt the behavioural variant corresponding to their cultural trait with probability cb_bh 
       population[is.na(population$bh)& population$trait_c == "Monogamy",]$bh <- 
         sample(c("Monogamy", "Polygamy"), sum(is.na(population$bh)&population$trait_c == "Monogamy"), prob = c(cb_bh, 1 - cb_bh), replace = TRUE)
       population[is.na(population$bh)& population$trait_c == "Polygamy",]$bh <-
@@ -139,7 +148,8 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
         add_column(bonded = "No", bond_ID = as.character("NA"), offspring = 0, ID = 1:N)
       
       # Create empty offspring tibble
-      # This is the empty table of offspring that will constitute the next generation once filled by the mating loop
+      # This is the empty table of offspring that will constitute the next generation once filled by the mating loop. 
+      # Without population growth, the next generation will consist of N individuals
       
       nextgen <- tibble(sex = sample(c("Female", "Male"), N, replace = TRUE, prob = c(b_f, 1 - b_f)),
                         trait_c = as.character(rep(NA, N)), 
@@ -150,30 +160,32 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
       
       # Each iteration of the loop is a single mating encounter with a 100% chance of reproduction. This is an assumption that could eventually be relaxed.
       
-      # Mating is random - the only rule is that monogamous individuals mate only once. Polygamous individuals are not limited in their mating opportunities (for now)
+      # Mating is random - the only rule is that monogamous individuals mate only with one partner. Polygamous individuals are not limited in their mating opportunities, except that they can't mate with "bonded" monogamists
       
       # Because I wrote this myself, this is likelihood the least optimised bit of this entire script for now.
       
       for (i in 1:N) {
         
         # Randomly draw the first participant of this mating encounter from the mating pool
-        # NB. Has to be Monogamous with less than 3 offspring or Polygamous.
+        # NB. Has to be Monogamous with less than X (mono_max) offspring or Polygamous with less than X (poly_max) offspring.
+        # Setting mono_max and poly_max allows us to set hard constraints on the number of offspring a monogamous pair or polygamous parent can have
+        # This can approximate time or resource constraints in the absence of modelling those directly
         
-        mate1 <- slice_sample(matingpool[(matingpool$bh=="Monogamy" & matingpool$offspring < 3)|(matingpool$bh=="Polygamy"),], n=1)
+        mate1 <- slice_sample(matingpool[(matingpool$bh=="Monogamy" & matingpool$offspring < mono_max)|(matingpool$bh=="Polygamy" & matingpool$offspring < poly_max),], n=1)
         
         # Based on the sex of the first participant, an opposite sex partner is drawn from the same population (same rules)
         
         if (mate1$sex=="Female" & mate1$bonded=="No") {
           mate2 <- 
-            slice_sample(matingpool[matingpool$sex=="Male" & matingpool$bonded == "No",], n=1)
+            slice_sample(matingpool[matingpool$sex=="Male" & matingpool$bonded == "No" & matingpool$offspring < poly_max & matingpool$ID != mate1$ID,], n=1)
         } 
         
         if (mate1$sex=="Male" & mate1$bonded=="No") {
           mate2 <- 
-            slice_sample(matingpool[matingpool$sex=="Female" & matingpool$bonded == "No",], n=1)
+            slice_sample(matingpool[matingpool$sex=="Female" & matingpool$bonded == "No" & matingpool$offspring < poly_max & matingpool$ID != mate1$ID,], n=1)
         } 
         
-        # If the first participant is already monogamously bonded, then Mate 2 will simply be his bondmate from previous mating encounters
+        # If the first participant of this mating encounter is already monogamously bonded (from a previous encounter), then Mate 2 will simply be his bondmate from previous mating encounters
         
         if (mate1$bonded=="Yes") {
           mate2 <- 
@@ -195,7 +207,7 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
         matingpool[mate1$ID,]$offspring <- matingpool[mate1$ID,]$offspring + 1
         matingpool[mate2$ID,]$offspring <- matingpool[mate2$ID,]$offspring + 1
         
-        ## Next, we start to populate the data row for the offspring that this encounter produced, starting with the cultural trait
+        ## Next, we start to populate the data row for the offspring that this encounter has produced, starting with the cultural trait
         
         # Both parents are culturally monogamous, thus child adopts cultural Monogamy
         if (mate1$trait_c == "Monogamy" & mate2$trait_c == "Monogamy") {
@@ -209,15 +221,15 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
         
         # If they have mixed parental cultural traits (i.e. one Monogamy and one Polygamy parent)
         if (is.na(nextgen$trait_c[i])) {  
-          # They adopt cultural Monogamy with probability b_c
+          # They adopt cultural Monogamy with probability b_c (parameter allows for a kind of dominance/recessiveness)
           nextgen$trait_c[i] <- 
             sample(c("Monogamy", "Polygamy"), 1, prob = c(b_c, 1 - b_c), replace = TRUE)
         }
         
-        # Determine 'mutant' individuals (for cultural traits, this is roughly analogous to "individual learners")
+        # Determine if this is a 'mutant' individual (for cultural traits, this is roughly analogous to "individual learners")
         mutate_c <- sample(c(TRUE, FALSE), 1, prob = c(mu_c, 1 - mu_c), replace = TRUE)
         
-        # If there are 'mutants' from cultural Monogamy to cultural Polygamy
+        # If they are a 'mutant' from cultural Monogamy to cultural Polygamy
         if (mutate_c & nextgen$trait_c[i] == "Monogamy") { 
           # Then flip them to Polygamy (for the time being, we call this mutation-induced Polygamy "Polygamy_m", because otherwise the next operation is going to reverse this entire step)
           nextgen$trait_c[i] <- "Polygamy_m" 
@@ -229,7 +241,7 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
           nextgen$trait_c[i] <- "Monogamy" 
         }
         
-        # Rename to standardize
+        # Rename to standardize (note: I'll have to check the code, but I think these problems with Polygamy_m, etc., are an artifact of previous problems in non-mating transmission models - I'll have to test whether they are still strictly necessar here)
         
         if (nextgen$trait_c[i]=="Polygamy_m"){
           nextgen$trait_c[i] <- "Polygamy"
@@ -254,10 +266,10 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
             sample(c("Monogamy", "Polygamy"), 1, prob = c(b_b, 1 - b_b), replace = TRUE)
         }
         
-        # Determine 'mutant' individuals (for cultural traits, this is roughly analogous to "individual learners")
+        # Determine 'mutant' individuals (for biological traits, this is roughly analogous to random genetic mutation, but is constrained to flipping a trait rather than generating new variants)
         mutate_b <- sample(c(TRUE, FALSE), 1, prob = c(mu_b, 1 - mu_b), replace = TRUE)
         
-        # If there are 'mutants' from cultural Monogamy to cultural Polygamy
+        # If there are 'mutants' from biological Monogamy to biological Polygamy
         if (mutate_b & nextgen$trait_b[i] == "Monogamy") { 
           # Then flip them to Polygamy (for the time being, we call this mutation-induced Polygamy "Polygamy_m", because otherwise the next operation is going to reverse this entire step)
           nextgen$trait_b[i] <- "Polygamy_m" 
@@ -269,7 +281,7 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
           nextgen$trait_b[i] <- "Monogamy" 
         }
         
-        # Rename to standardize
+        # Rename to standardize (note: as above)
         
         if (nextgen$trait_b[i]=="Polygamy_m"){
           nextgen$trait_b[i] <- "Polygamy"
@@ -287,7 +299,7 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
           population$bh[i] <- "Polygamy" 
         }
         
-        # If the have mixed cultural/biological traits
+        # If the individual has mixed cultural/biological traits
         if (is.na(nextgen$bh[i]) & nextgen$trait_c[i] == "Monogamy") {  
           # They will adopt the behavioural variant corresponding to their cultural trait with probability cb_bh
           nextgen$bh[i] <- 
@@ -323,7 +335,7 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
       
       # Get observable monogamy outcome from mating pool
       output[output$generation == t-1 & output$run == r, ]$p_mono <-
-        sum(matingpool$mated == "Yes" & matingpool$offspring == 1) / N
+        sum(matingpool$bonded == "Yes") / N
       
       
     }
@@ -336,7 +348,82 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
 }
 
 
-##########################################################################################################
+
+
+tstrun <- ABMmodel2(100, 50, 10)
+
+
+## Some plots and exploratory analysis
+
+ggplot(data = tstrun, aes(y = p_bh, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy behaviour)", x = "Generation")
+
+ggplot(data = tstrun, aes(y = p_c, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy cultural trait)", x = "Generation")
+
+ggplot(data = tstrun, aes(y = p_b, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy biological trait)", x = "Generation")
+
+ggplot(data = tstrun, aes(y = p_mono, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with observable Monogamy)", x = "Generation")
+
+
+
+tstrun2 <- ABMmodel2(100, 100, 10, b_f = 0.3)
+
+ggplot(data = tstrun2, aes(y = p_bh, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy behaviour)", x = "Generation")
+
+ggplot(data = tstrun2, aes(y = p_c, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy cultural trait)", x = "Generation")
+
+ggplot(data = tstrun2, aes(y = p_b, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy biological trait)", x = "Generation")
+
+ggplot(data = tstrun2, aes(y = p_mono, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with observable Monogamy)", x = "Generation")
+
+
+
+
+
+
+
+
+
+########################################### Step-by-step testing ###############################################################
 
 # Create first generation
 population <- tibble(sex = sample(c("Female", "Male"), 100, replace = TRUE, prob = c(0.5, 1 - 0.5)),

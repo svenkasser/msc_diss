@@ -70,6 +70,7 @@ ABMmodel1 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
                    p_b = as.numeric(rep(NA, t_max * r_max)),
                    p_bh = as.numeric(rep(NA, t_max * r_max)),
                    p_f = as.numeric(rep(NA, t_max * r_max)),
+                   p_mono = as.numeric(rep(NA, t_max * r_max)),
                    run = as.factor(rep(1:r_max, each = t_max)))
   
   # Loop for each run (essentially each simulated population)
@@ -305,6 +306,11 @@ ABMmodel1 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
       output[output$generation == t & output$run == r, ]$p_f <- 
         sum(population$sex == "Female") / N 
       
+      # Get observable monogamy outcome from mating pool
+      output[output$generation == t-1 & output$run == r, ]$p_mono <-
+        sum(matingpool$mated == "Yes" & matingpool$offspring == 1) / N
+      
+      
     }
     
   }
@@ -318,7 +324,7 @@ ABMmodel1 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
 
 Before <- Sys.time()
 
-testrun <- ABMmodel1(100, 50, 5)
+testrun <- ABMmodel1(1000, 50, 10)
 
 After <- Sys.time()
 
@@ -349,5 +355,75 @@ ggplot(data = testrun, aes(y = p_b, x = generation)) +
   theme_bw() +
   labs(y = "p (proportion of individuals with Monogamy biological trait)", x = "Generation")
 
+ggplot(data = testrun, aes(y = p_mono, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with observable Monogamy)", x = "Generation")
+
+## Sex ratio adjustment
+
+testrun2 <- ABMmodel1(1000, 50, 10, pf_0 = 0.2, b_f = 0.2)
+
+ggplot(data = testrun2, aes(y = p_bh, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy behaviour)", x = "Generation")
+
+ggplot(data = testrun2, aes(y = p_c, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy cultural trait)", x = "Generation")
+
+ggplot(data = testrun2, aes(y = p_b, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy biological trait)", x = "Generation")
+
+ggplot(data = testrun2, aes(y = p_mono, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with observable Monogamy)", x = "Generation")
+
+## Dominance of cultural trait
+
+testrun3 <- ABMmodel1(1000, 50, 10, cb_bh = 0.7)
+
+ggplot(data = testrun3, aes(y = p_bh, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy behaviour)", x = "Generation")
+
+ggplot(data = testrun3, aes(y = p_c, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy cultural trait)", x = "Generation")
+
+ggplot(data = testrun3, aes(y = p_b, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy biological trait)", x = "Generation")
+
+ggplot(data = testrun3, aes(y = p_mono, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with observable Monogamy)", x = "Generation")
 
 
