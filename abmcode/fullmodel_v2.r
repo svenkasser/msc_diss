@@ -11,6 +11,7 @@ library(ggplot2)
 # r_max = number of separate model populations simulated
 # Possible values: 0 < r_max
 # Default value: N/A
+
 # t_max = number of distinct, discrete generations simulated for each population
 # Possible values: 0 < t_max
 # Default value: N/A
@@ -20,9 +21,11 @@ library(ggplot2)
 # N = population size. Population size is static for the time being.
 # Possible values: 0 < N
 # Default value: N/A
+
 # pf_0 = avg. percentage of female individuals >in the starting population<. This is our starting sex-ratio stand-in.
 # Possible values: 0 =< pf_0 =< 1
 # Default value: 0.5 - equal starting sex-ratio
+
 # b_f = female demographic bias in subsequent generations. This can be used to model stable sex ratio biases in the adult population (e.g. sex differences in infant mortality)
 # Possible values: 0 =< b_f =< 1
 # Default value: 0.5 - no non-randomly biased sex-ratios
@@ -32,15 +35,19 @@ library(ggplot2)
 # pc_0 = avg. starting trait frequency for cultural "Monogamy"
 # Possible values: 0 =< pc_0 =< 1
 # Default value: 0.5 - equal starting cultural Poly/Mono split
+
 # pb_0 = avg. starting trait frequency for biological "Monogamy"
 # Possible values: 0 =< pb_0 =< 1
 # Default value: 0.5 - equal starting biological Poly/Mono split
+
 # b_c = transmission bias for cultural "Monogamy". This only plays a role for individuals with mixed parental traits.
 # Possible values: 0 =< b_c =< 1
 # Default value: 0.5 - no biased transmission. Higher/lower values increase/decrease the likelihood of adopting "Monogamy".
+
 # b_b = transmission bias for biological "Monogamy". This only plays a role for individuals that inherit mixed parental traits.
 # Possible values: 0 =< b_b =< 1
 # Default value: 0.5 - no biased transmission. Higher/lower values increase/decrease the likelihood of inheriting "Monogamy".
+
 # cb_bh = culture bias in behaviour. This only plays a role for individuals with mixed cultural / biological traits.
 # Possible values: 0 =< b_bh =< 1
 # Default value: 0.5 - no bias toward cultural trait in behaviour. Higher/lower values increase/decrease the likelihood of adopting the cultural trait as the behavioural phenotype.
@@ -51,6 +58,7 @@ library(ggplot2)
 # mu_c = mutation rate of cultural traits. This is roughly analogous to the frequency of individual learning "overriding" a vertically inherited trait.
 # Possible values: 0 =< mu_c =< 1
 # Default value: 0 - no mutation
+
 # mu_b = mutation rate of biological traits. This is roughly analogous to genetic mutation.
 # Possible values: 0 =< mu_c =< 1
 # Default value: 0 - no mutation
@@ -60,6 +68,8 @@ library(ggplot2)
 # mono_max = maximum number of offspring for one monogamous pair
 # Possible values: 0 < mono_max
 # Default value: 100000 - effectively no reproductive limits on monogamous pairs
+
+
 # poly_max = maximum number of offspring for a polygamous individual
 # Possible values: 0 < poly_max
 # Default value: 100000 - effectively no reproductive limits on monogamous pairs
@@ -335,7 +345,7 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
       
       # Get observable monogamy outcome from mating pool
       output[output$generation == t-1 & output$run == r, ]$p_mono <-
-        sum(matingpool$bonded == "Yes") / N
+        sum(matingpool$bonded == "Yes" | (matingpool$bh == "Polygamy" & matingpool$offspring == 1)) / N
       
       
     }
@@ -348,10 +358,17 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
 }
 
 
+## Initial testrun
 
+Before <- Sys.time()
 
-tstrun <- ABMmodel2(100, 50, 10)
+tstrun <- ABMmodel2(500, 100, 10)
 
+After <- Sys.time()
+
+Runtime <- After - Before
+
+Runtime
 
 ## Some plots and exploratory analysis
 
