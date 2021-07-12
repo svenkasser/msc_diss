@@ -1,0 +1,29 @@
+---
+title: "Dissertation drafts and notes"
+author: "Sven Kasser"
+date: "06/07/2021"
+output: 
+  pdf_document:
+    citation_package: natbib
+    template: svm-latex-ms2.tex 
+bibliography: \dummy{`r file.path(getwd(), list.files(getwd(), "bib$"))`}
+biblio-style: bath
+---
+
+# Introduction
+
+## The traditional paradigm
+
+Until a relatively recent diversification of approaches, sexual selection theory has long been used to assert differences in mating strategies between human females males arise from a fundamental dichotomy between "coy females" and "promiscuous males" - sometimes characterised as the "Darwin-Bateman paradigm" [@borgerhoffmulder2021].
+
+## Explanations for marriage patterns in humans
+
+### Polygyny threshold model
+
+### Harem defense polygyny
+
+### Market forces / sex-ratio dependent polygyny
+
+### Rival wealth-induced monogamy
+
+### Cultural group selection
