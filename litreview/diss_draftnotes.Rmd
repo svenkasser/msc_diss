@@ -12,9 +12,11 @@ biblio-style: bath
 
 # Introduction
 
-## The traditional paradigm
+## Sexual selection theory and mating strategies
 
-Until a relatively recent diversification of approaches, sexual selection theory has long been used to assert differences in mating strategies between human females males arise from a fundamental dichotomy between "coy females" and "promiscuous males" - sometimes characterised as the "Darwin-Bateman paradigm" [@borgerhoffmulder2021].
+### The Darwin-Bateman paradigm
+
+Until a relatively recent diversification of approaches, sexual selection theory has long been used to assert that differences in mating strategies between the sexes arise from a fundamental dichotomy between "coy females" and "promiscuous males" - sometimes characterised as the "Darwin-Bateman paradigm" [@borgerhoffmulder2021]. As the name would suggest, it is rooted in @darwin1981 's early assertion that males in almost all animal species are more eager and less discriminate than females when it comes to reproduction. This, Darwin continues, makes them the primary target of evolution via sexual selection - either through male-male competition or through female choice, the inverse processes of which (e.g. female-female competition, etc.) he largely neglects. Darwin, of course, could only speculate about the origin of these sex differences, which he tentantively reasoned to be driven by the fact that insemination requires males to closely approach females, thus selecting for an "eagerness" in males to seek out females [@darwin1981]. But the brevity with which this, entirely non-empirical, explanation is offered in The Descent of Man perhaps speaks to the lack of confidence Darwin had in this line of reasoning. Darwin's ideas on sexual selection and the associated coy female-ardent male dichotomy largely languished in scientific no-man's land until the latter half of the eponymous paradigm, Angus J. Bateman, published an article titled "Intra-sexual selection in Drosophila" in Heredity in 1948. Here, @bateman1948
 
 ## Explanations for marriage patterns in humans
 

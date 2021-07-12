@@ -1,0 +1,209 @@
+\documentclass[]{article}
+\usepackage[left=1in,top=1in,right=1in,bottom=1in]{geometry}
+\newcommand*{\authorfont}{\fontfamily{phv}\selectfont}
+\usepackage{lmodern}
+
+
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+
+
+
+\usepackage{abstract}
+\renewcommand{\abstractname}{}    % clear the title
+\renewcommand{\absnamepos}{empty} % originally center
+
+\renewenvironment{abstract}
+ {{%
+    \setlength{\leftmargin}{0mm}
+    \setlength{\rightmargin}{\leftmargin}%
+  }%
+  \relax}
+ {\endlist}
+
+\makeatletter
+\def\@maketitle{%
+  \newpage
+%  \null
+%  \vskip 2em%
+%  \begin{center}%
+  \let \footnote \thanks
+    {\fontsize{18}{20}\selectfont\raggedright  \setlength{\parindent}{0pt} \@title \par}%
+}
+%\fi
+\makeatother
+
+
+
+
+\setcounter{secnumdepth}{0}
+
+
+
+\title{Dissertation drafts and notes }
+ 
+
+
+
+\author{\Large \vspace{0.05in} \newline\normalsize\emph{}  }
+
+
+\date{}
+
+\usepackage{titlesec}
+
+\titleformat*{\section}{\normalsize\bfseries}
+\titleformat*{\subsection}{\normalsize\itshape}
+\titleformat*{\subsubsection}{\normalsize\itshape}
+\titleformat*{\paragraph}{\normalsize\itshape}
+\titleformat*{\subparagraph}{\normalsize\itshape}
+
+\newcommand{\dummy}[1]{#1}
+
+\usepackage{natbib}
+\bibpunct{(}{)}{;}{a}{}{,}
+\bibliographystyle{bath}
+%\usepackage[strings]{underscore} % protect underscores in most circumstances
+
+
+
+\newtheorem{hypothesis}{Hypothesis}
+\usepackage{setspace}
+
+\makeatletter
+\@ifpackageloaded{hyperref}{}{%
+\ifxetex
+  \PassOptionsToPackage{hyphens}{url}\usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \PassOptionsToPackage{hyphens}{url}\usepackage[unicode=true]{hyperref}
+\fi
+}
+
+\@ifpackageloaded{color}{
+    \PassOptionsToPackage{usenames,dvipsnames}{color}
+}{%
+    \usepackage[usenames,dvipsnames]{color}
+}
+\makeatother
+\hypersetup{breaklinks=true,
+%            bookmarks=true,
+            pdfauthor={ ()},
+             pdfkeywords = {},  
+            pdftitle={Dissertation drafts and notes},
+            colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=magenta,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+
+% set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+
+
+% add tightlist ----------
+\providecommand{\tightlist}{%
+\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\begin{document}
+	
+% \pagenumbering{arabic}% resets `page` counter to 1 
+%    
+
+% \maketitle
+
+{% \usefont{T1}{pnc}{m}{n}
+\setlength{\parindent}{0pt}
+\thispagestyle{plain}
+{\fontsize{18}{20}\selectfont\raggedright 
+\maketitle  % title \par  
+
+}
+
+{
+   \vskip 13.5pt\relax \normalsize\fontsize{11}{12} 
+\textbf{\authorfont } \hskip 15pt \emph{\small }   
+
+}
+
+}
+
+
+
+
+
+
+\vskip 6.5pt
+
+
+\noindent  \hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+\hypertarget{sexual-selection-theory-and-mating-strategies}{%
+\subsection{Sexual selection theory and mating
+strategies}\label{sexual-selection-theory-and-mating-strategies}}
+
+\hypertarget{the-darwin-bateman-paradigm}{%
+\subsubsection{The Darwin-Bateman
+paradigm}\label{the-darwin-bateman-paradigm}}
+
+Until a relatively recent diversification of approaches, sexual
+selection theory has long been used to assert that differences in mating
+strategies between the sexes arise from a fundamental dichotomy between
+``coy females'' and ``promiscuous males'' - sometimes characterised as
+the ``Darwin-Bateman paradigm'' \citep{borgerhoffmulder2021}. As the
+name would suggest, it is rooted in \citet{darwin1981} 's early
+assertion that males in almost all animal species are more eager and
+less discriminate than females when it comes to reproduction. This,
+Darwin continues, makes them the primary target of evolution via sexual
+selection - either through male-male competition or through female
+choice, the inverse processes of which (e.g.~female-female competition,
+etc.) he largely neglects. Darwin, of course, could only speculate about
+the origin of these sex differences, which he tentantively reasoned to
+be driven by the fact that insemination requires males to closely
+approach females, thus selecting for an ``eagerness'' in males to seek
+out females \citep{darwin1981}. But the brevity with which this,
+entirely non-empirical, explanation is offered in The Descent of Man
+perhaps speaks to the lack of confidence Darwin had in this line of
+reasoning. Darwin's ideas on sexual selection and the associated coy
+female-ardent male dichotomy largely languished in scientific no-man's
+land until the latter half of the eponymous paradigm, Angus J. Bateman,
+published an article titled ``Intra-sexual selection in Drosophila'' in
+Heredity in 1948. Here, \citet{bateman1948}
+
+\hypertarget{explanations-for-marriage-patterns-in-humans}{%
+\subsection{Explanations for marriage patterns in
+humans}\label{explanations-for-marriage-patterns-in-humans}}
+
+\hypertarget{polygyny-threshold-model}{%
+\subsubsection{Polygyny threshold
+model}\label{polygyny-threshold-model}}
+
+\hypertarget{harem-defense-polygyny}{%
+\subsubsection{Harem defense polygyny}\label{harem-defense-polygyny}}
+
+\hypertarget{market-forces-sex-ratio-dependent-polygyny}{%
+\subsubsection{Market forces / sex-ratio dependent
+polygyny}\label{market-forces-sex-ratio-dependent-polygyny}}
+
+\hypertarget{rival-wealth-induced-monogamy}{%
+\subsubsection{Rival wealth-induced
+monogamy}\label{rival-wealth-induced-monogamy}}
+
+\hypertarget{cultural-group-selection}{%
+\subsubsection{Cultural group
+selection}\label{cultural-group-selection}}
+
+
+
+
+\newpage
+\singlespacing 
+\bibliography{\dummy{C:/Users/fergu/Documents/msc_diss/litreview/Dissertation.bib}}
+
+\end{document}
