@@ -362,7 +362,7 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
 
 Before <- Sys.time()
 
-tstrun <- ABMmodel2(500, 100, 10)
+tstrunp2 <- ABMmodel2(150, 100, 10)
 
 After <- Sys.time()
 
@@ -436,9 +436,8 @@ ggplot(data = tstrun2, aes(y = p_mono, x = generation)) +
 
 
 
-
-
-
+tstrunp1 <- ABMmodel2(150, 100, 10, b_f = 0.2)
+tstrunp2 <- ABMmodel2(150, 100, 10, b_f = 0.5)
 
 ########################################### Step-by-step testing ###############################################################
 
