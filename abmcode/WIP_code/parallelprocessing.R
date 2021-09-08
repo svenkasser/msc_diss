@@ -149,7 +149,7 @@ ABMmodel5 <- function(N, t_max, r_max, pc_0 = 0.5, pb_0 = 0.5, b_c = 0.5, b_b = 
   mono_max = mono_max
   poly_max = poly_max
   
-  final_output <- foreach(r = 1:r_max, .packages = 'tidyverse', .export = c("matingmarket_sim", "trait_determination"), .combine = 'rbind') %dopar% {
+  final_output <- foreach(r = 1:r_max, .packages = 'tidyverse', .export = c("matingmarket_sim2", "trait_determination"), .combine = 'rbind') %dopar% {
     
     r = r
     
@@ -188,6 +188,8 @@ ABMmodel5 <- function(N, t_max, r_max, pc_0 = 0.5, pb_0 = 0.5, b_c = 0.5, b_b = 
                      p_bh = as.numeric(rep(NA, 1)),
                      p_f = as.numeric(rep(NA, 1)),
                      p_mono = as.numeric(rep(NA, 1)),
+                     p_polyg = as.numeric(rep(NA,1)),
+                     p_polya = as.numeric(rep(NA,1)),
                      run = as.factor(rep(r, 1)))
     
     # Add first generation's p_c (proportion of cultural Monogamy trait in entire population) for run r
@@ -230,7 +232,7 @@ ABMmodel5 <- function(N, t_max, r_max, pc_0 = 0.5, pb_0 = 0.5, b_c = 0.5, b_b = 
                              trait_b_p2 = as.character(rep(NA, N)))
       
       
-      matingmodel_output <- matingmarket_sim(matingpool, matepairings, N = N, mono_maxRS = mono_max, poly_maxRS = poly_max)
+      matingmodel_output <- matingmarket_sim2(matingpool, matepairings, N = N, mono_maxRS = mono_max, poly_maxRS = poly_max)
       
       matingpool <- as_tibble(cbind(matingmodel_output[2]$input$sex,
                                     matingmodel_output[2]$input$trait_c,
@@ -268,6 +270,8 @@ ABMmodel5 <- function(N, t_max, r_max, pc_0 = 0.5, pb_0 = 0.5, b_c = 0.5, b_b = 
                            p_bh = as.numeric(rep(NA, 1)),
                            p_f = as.numeric(rep(NA, 1)),
                            p_mono = as.numeric(rep(NA, 1)),
+                           p_polyg = as.numeric(rep(NA, 1)),
+                           p_polya = as.numeric(rep(NA, 1)),
                            run = as.factor(rep(r, 1)))
       
       # Get p_c (cultural trait frequency for "Monogamy") and put it into output slot for this generation t and run r
@@ -290,6 +294,13 @@ ABMmodel5 <- function(N, t_max, r_max, pc_0 = 0.5, pb_0 = 0.5, b_c = 0.5, b_b = 
       output[output$generation == t-1 & output$run == r, ]$p_mono <-
         sum(matingpool$partners == 1) / N
       
+      output[output$generation == t-1 & output$run == 1, ]$p_polyg <-
+        sum(matingpool$partners == 2 & matingpool$sex == "Male") / sum(matingpool$sex=="Male")
+      
+      output[output$generation == t-1 & output$run == 1, ]$p_polya <-
+        sum(matingpool$partners == 2 & matingpool$sex == "Female") / sum(matingpool$sex=="Female")
+      
+      
       output <- rbind(output,new_output)
       
     }
@@ -303,7 +314,7 @@ ABMmodel5 <- function(N, t_max, r_max, pc_0 = 0.5, pb_0 = 0.5, b_c = 0.5, b_b = 
 
 Before2 <- Sys.time()
 
-tstst2 <- ABMmodel5(150, 5, 5)
+tstst2 <- ABMmodel5(150, 5, 2, mono_max = 1)
 
 After2 <- Sys.time()
 
@@ -313,7 +324,12 @@ Runtime2
 
 
 
-
+ggplot(data = tstst2, aes(y = p_polygyny, x = generation)) +
+  geom_line(aes(colour = run)) +
+  #stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy behaviour)", x = "Generation")
 
 
 
@@ -321,8 +337,8 @@ Runtime2
 ######## Testing
 
 N = 100
-t_max = 6
-r_max = 2
+t_max = 10
+r_max = 3
 pc_0 = 0.5
 pb_0 = 0.5
 b_c = 0.5
@@ -330,13 +346,11 @@ b_b = 0.5
 cb_bh = 0.5
 pf_0 = 0.5
 b_f = 0.5
-mono_max = 3
-poly_max = 2
+mono_max = 1
+poly_max = 3
 
-final_output <- foreach(r = 1:r_max, .packages = 'tidyverse', .export = c("matingmarket_sim", "trait_determination"), .combine = 'rbind') %dopar% {
+final_output <- foreach(r = 1:r_max, .packages = 'tidyverse', .combine = 'rbind') %dopar% {
   
-  r = r
-
   # Create first generation
   population <- tibble(sex = sample(c("Female", "Male"), N, replace = TRUE, prob = c(pf_0, 1 - pf_0)),
                        trait_c = sample(c("Monogamy", "Polygamy"), N, replace = TRUE, prob = c(pc_0, 1 - pc_0)), 
@@ -372,6 +386,10 @@ final_output <- foreach(r = 1:r_max, .packages = 'tidyverse', .export = c("matin
                    p_bh = as.numeric(rep(NA, 1)),
                    p_f = as.numeric(rep(NA, 1)),
                    p_mono = as.numeric(rep(NA, 1)),
+                   RS_poly = as.numeric(rep(NA, 1)),
+                   RS_mono = as.numeric(rep(NA, 1)),
+                   p_polygyny = as.numeric(rep(NA, 1)),
+                   p_polyandry = as.numeric(rep(NA, 1)),
                    run = as.factor(rep(r, 1)))
   
   # Add first generation's p_c (proportion of cultural Monogamy trait in entire population) for run r
@@ -414,7 +432,7 @@ final_output <- foreach(r = 1:r_max, .packages = 'tidyverse', .export = c("matin
                            trait_b_p2 = as.character(rep(NA, N)))
     
     
-    matingmodel_output <- matingmarket_sim(matingpool, matepairings, N = N, mono_maxRS = mono_max, poly_maxRS = poly_max)
+    matingmodel_output <- matingmarket_sim2(matingpool, matepairings, N = N, mono_maxRS = mono_max, poly_maxRS = poly_max)
     
     matingpool <- as_tibble(cbind(matingmodel_output[2]$input$sex,
                                   matingmodel_output[2]$input$trait_c,
@@ -452,6 +470,10 @@ final_output <- foreach(r = 1:r_max, .packages = 'tidyverse', .export = c("matin
                      p_bh = as.numeric(rep(NA, 1)),
                      p_f = as.numeric(rep(NA, 1)),
                      p_mono = as.numeric(rep(NA, 1)),
+                     RS_poly = as.numeric(rep(NA, 1)),
+                     RS_mono = as.numeric(rep(NA, 1)),
+                     p_polygyny = as.numeric(rep(NA, 1)),
+                     p_polyandry = as.numeric(rep(NA, 1)),           
                      run = as.factor(rep(r, 1)))
     
     # Get p_c (cultural trait frequency for "Monogamy") and put it into output slot for this generation t and run r
@@ -474,11 +496,56 @@ final_output <- foreach(r = 1:r_max, .packages = 'tidyverse', .export = c("matin
     output[output$generation == t-1 & output$run == r, ]$p_mono <-
       sum(matingpool$partners == 1) / N
     
+    # Get average RS for polygamists
+    output[output$generation == t-1 & output$run == r, ]$RS_poly <-
+      mean(as.integer((matingpool[matingpool$bh=="Polygamy",]$offspring)))
+    
+    # Get average RS for monogamists
+    output[output$generation == t-1 & output$run == r, ]$RS_mono <-
+      mean(as.integer((matingpool[matingpool$bh=="Monogamy",]$offspring)))
+   
+    # Get average RS for polygamists
+    output[output$generation == t-1 & output$run == r, ]$p_polygyny <-
+      sum(matingpool$sex == "Male" & matingpool$partners > 0) / sum(population$sex == "Male") 
+    
+    # Get average RS for monogamists
+    output[output$generation == t-1 & output$run == r, ]$p_polyandry <-
+      sum(matingpool$sex == "Female" & matingpool$partners > 0) / sum(population$sex == "Female") 
+    
+    
     output <- rbind(output,new_output)
     
   }
   return(output)
 }
 
-# Export data from function
+
 final_output
+
+mean(as.integer((matingpool$partners)))
+
+mean(as.integer((matingpool$offspring)))
+
+
+mean(as.integer((matingpool[matingpool$bh=="Polygamy",]$offspring)))
+
+mean(as.integer((matingpool[matingpool$bh=="Monogamy",]$offspring)))
+
+
+
+
+mean(as.integer((matingpool$offspring)))
+
+
+final_output
+
+final_output$p_polyandry
+
+lm(final_output$p_polygny ~ final_output$p_polyandry, data=final_output)
+
+ggplot(data = final_output, aes(y = p_polygyny, x = generation)) +
+  geom_line(aes(colour = run)) +
+  stat_summary(fun = mean, geom = "line", size = 1) +
+  ylim(c(0, 1)) +
+  theme_bw() +
+  labs(y = "p (proportion of individuals with Monogamy behaviour)", x = "Generation")

@@ -362,7 +362,7 @@ ABMmodel2 <- function(N, t_max, r_max, mu_c = 0, mu_b = 0, pc_0 = 0.5, pb_0 = 0.
 
 Before <- Sys.time()
 
-tstrunp2 <- ABMmodel2(150, 100, 10)
+tstrunp2 <- ABMmodel2(50, 10, 5)
 
 After <- Sys.time()
 
@@ -441,6 +441,8 @@ tstrunp2 <- ABMmodel2(150, 100, 10, b_f = 0.5)
 
 ########################################### Step-by-step testing ###############################################################
 
+Before_old <- Sys.time()
+
 # Create first generation
 population <- tibble(sex = sample(c("Female", "Male"), 100, replace = TRUE, prob = c(0.5, 1 - 0.5)),
                      trait_c = sample(c("Monogamy", "Polygamy"), 100, replace = TRUE, prob = c(0.5, 1 - 0.5)), 
@@ -493,6 +495,8 @@ nextgen <- tibble(sex = sample(c("Female", "Male"), 100, replace = TRUE, prob = 
 # Mating is random - the only rule is that monogamous individuals mate only once. Polygamous individuals are not limited in their mating opportunities (for now)
 
 # Because I wrote this myself, this is likelihood the least optimised bit of this entire script for now.
+
+
 
 for (i in 1:100) {
   
@@ -638,4 +642,10 @@ for (i in 1:100) {
   
   
 }
+
+After_old <- Sys.time()
+
+Runtime_old <- After_old - Before_old
+
+Runtime_old
 
